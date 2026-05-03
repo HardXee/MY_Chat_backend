@@ -14,7 +14,13 @@ const userSchema = new Schema({
   password: {
     type: String,
     required: true
-  }
+  },
+  friends:[
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    }
+  ]
 });
 
 export default mongoose.model("User", userSchema);

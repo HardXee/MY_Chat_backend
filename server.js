@@ -1,41 +1,51 @@
-import express from 'express'
-import authRoutes from './routes/authRoutes.js'
-import connectDB from './db/db.js';
-import dotenv from 'dotenv'
-import cors from 'cors'
+import express from "express";
+import authRoutes from "./routes/authRoutes.js";
+import connectDB from "./db/db.js";
+import dotenv from "dotenv";
+import cors from "cors";
+import { createServer } from "node:http";
 
-dotenv.config()
+import { initSocket } from "./socket/socket.js";
 
-const app = express()
-app.use(cors({
+dotenv.config();
+
+const app = express();
+const server = createServer(app);
+
+/* Middleware */
+app.use(
+  cors({
     origin: "http://localhost:5173",
-    credentials: true
-}))
-
-const salt = process.env.SALT;
-// handelilng simple get 
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 
-app.get('/',(req,res)=>{
-    res.send(`working ${salt}`);
-})
+/* Routes */
+app.get("/", (req, res) => {
+  res.send("working");
+});
 
-// use router
-app.use("/api/auth",authRoutes)
+app.use("/api/auth", authRoutes);
 
+app.get("/hello", (req, res) => {
+  res.send("working");
+});
 
-app.get('/hello',(req,res,next) =>{
-    res.send("working");
-})
+/* Start Server */
+const startServer = async () => {
+  try {
+    await connectDB();
 
-app.listen(3000,() => {
-    console.log("server is Running at 3000");
-    connectDB()
-})
+    initSocket(server);
 
+    server.listen(3000, () => {
+      console.log("server running at http://localhost:3000");
+    });
+  } catch (error) {
+    console.log("Server failed to start:", error);
+  }
+};
 
-
-
-
-
+startServer();

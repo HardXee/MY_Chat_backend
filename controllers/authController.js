@@ -67,7 +67,7 @@ export const register = async(req,res) => {
 }
 
 
-export const login = async(req,res) => {
+export const login = async(req,res) => {        
 
     try{
         const {email,password} =  req.body;
@@ -102,7 +102,7 @@ export const login = async(req,res) => {
         }
 
         const token = jwt.sign(data,jwtSecretKey);
-
+        console.log(existingUser)
         res.cookie("token", token, {
             httpOnly: false ,
             secure: false,
@@ -111,6 +111,8 @@ export const login = async(req,res) => {
 
         return res.status(200).send({
             message: "logined",
+            name: existingUser.name
+            
         })
     
     }

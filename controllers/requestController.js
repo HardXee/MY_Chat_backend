@@ -1,16 +1,19 @@
+
 import User from '../modles/user.js'
+import Request from '../modles/request.js'
 
 export const searchUser = async (req,res) => {
     try{
-        const {email}  = req.body;
+        const {email}  = req.query;
 
-        if(email.length == 0){
-            return res.status(400).send('email is empty');
+        if (!email) {
+            return res.status(400).json({
+            message: "Email is required"
+            });
         }
 
         // chekc for the user in the dbl 
         const indb = await User.findOne({email});
-        console.log(indb)
 
         if(!indb){
             return res.status(400).send("user not found");
@@ -26,17 +29,41 @@ export const searchUser = async (req,res) => {
     }
 }
 
-export const sendRequest = (req,res) =>{
+export const sendRequest = async(req,res) =>{
     try{
         // sender _id , receiver.email,
-        const {receiver} = req.body;
-        const senderId = req.user._id;
+        const {email} = req.body;
+        const senderId = req.user.userID;
 
-        console.log(receiver,senderId)
+
+
+            if (!email) {
+            return res.status(400).json({
+            message: "Email is required"
+            });
+        }
+
+        const finduser = await User.findOne({email});
+
+        
+        if(!finduser){
+            return res.status(400).send("user not found");
+        }   
+        const receiver  = finduser._id.toString();
+        const request = await Request.create({
+            sender: senderId,
+            receiver: receiver
+        })
+       
+
+        return res.status(200).send("request sent");
+
+        
 
     }
     catch(error){
         console.log(error)
+        res.status(400).send(error);
     }
 
 }

@@ -1,6 +1,7 @@
 
 import User from '../modles/user.js'
 import Request from '../modles/request.js'
+import { response } from 'express';
 
 export const searchUser = async (req,res) => {
     try{
@@ -43,21 +44,36 @@ export const sendRequest = async(req,res) =>{
             });
         }
 
-        const finduser = await User.findOne({email});
+     
 
+        
+        const finduser = await User.findOne({email});
         
         if(!finduser){
             return res.status(400).send("user not found");
         }   
         const receiver  = finduser._id.toString();
-        const request = await Request.create({
-            sender: senderId,
+
+
+        const alreadysent = await Request.find({
+            sender:senderId,
             receiver: receiver
+            
         })
-       
+        
+        console.log(alreadysent)
+        if(alreadysent.length !== 0 ){
 
-        return res.status(200).send("request sent");
+          
+            return res.status(400).send('request already sent');
+        }
 
+          const request = await Request.create({
+                sender: senderId,
+                receiver: receiver
+            })
+           
+            return res.status(200).send("request sent");
         
 
     }
@@ -65,5 +81,28 @@ export const sendRequest = async(req,res) =>{
         console.log(error)
         res.status(400).send(error);
     }
+
+}
+
+export const getRequestCount = async(req,res) => {
+    try{
+          const senderId = req.user.userID;
+
+         const count = await Request.countDocuments({
+            sender: senderId,
+            status: "pending"
+            });
+
+        if(!count){
+             return res.status(400).send("no request found");
+        }
+
+        console.log(count);
+        res.status(200).send(count)
+    }
+    catch(error){
+        console.log(error);
+    }
+
 
 }

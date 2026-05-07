@@ -2,6 +2,7 @@
 import User from '../modles/user.js'
 import Request from '../modles/request.js'
 import { response } from 'express';
+import mongoose from 'mongoose';
 
 export const searchUser = async (req,res) => {
     try{
@@ -73,6 +74,7 @@ export const sendRequest = async(req,res) =>{
                 receiver: receiver
             })
            
+           
             return res.status(200).send("request sent");
         
 
@@ -84,12 +86,16 @@ export const sendRequest = async(req,res) =>{
 
 }
 
+
+
+
+
 export const getRequestCount = async(req,res) => {
     try{
-          const senderId = req.user.userID;
+          const receiver = req.user.userID;
 
          const count = await Request.countDocuments({
-            sender: senderId,
+            receiver: receiver,
             status: "pending"
             });
 
@@ -98,11 +104,38 @@ export const getRequestCount = async(req,res) => {
         }
 
         console.log(count);
+        
         res.status(200).send(count)
     }
     catch(error){
         console.log(error);
+        return res.status(400).send("no request found");
     }
+}
 
 
+export const getReceiverRequests = async(req,res) =>{
+    try{
+        const receiver = req.user.userID
+
+        const request = await Request.find({
+             receiver,
+            status: 'pending'
+        })
+        .populate('sender')
+        .exec();
+
+        if(!request){
+             return res.status(400).send("no request found");
+        }
+        
+
+        console.log(request[0].sender)
+        res.status(200).send(request)
+
+    }   
+    catch(error){
+         console.log(error);
+         return res.status(400).send("no request found");
+    }
 }

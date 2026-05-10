@@ -130,7 +130,7 @@ export const getReceiverRequests = async(req,res) =>{
         }
         
 
-        console.log(request[0].sender)
+       
         res.status(200).send(request)
 
     }   
@@ -139,3 +139,61 @@ export const getReceiverRequests = async(req,res) =>{
          return res.status(400).send("no request found");
     }
 }
+
+
+export const acceptRequest = async (req,res) => {
+    try{
+        const receiver = req.user.userID;
+        const { sender_id } = req.params;
+
+        console.log(receiver, sender_id);
+
+        // add sender to receiver friend list
+        await User.findOneAndUpdate(
+        { _id: receiver },
+        {
+            $addToSet: {
+            friends: sender_id,
+            },
+        },
+        { returnDocument: "after" }
+        );
+
+        // add receiver to sender friend list
+        await User.findOneAndUpdate(
+        { _id: sender_id },
+        {
+            $addToSet: {
+            friends: receiver,
+            },
+        },
+        { returnDocument: "after" }
+        );
+
+        // update request status
+        await Request.findOneAndUpdate(
+        {
+            sender: sender_id,
+            receiver: receiver,
+            status: "pending",
+        },
+        {
+            status: "accepted",
+        }
+        );
+
+        return res.status(200).send({
+            status: 'success',
+            message: "request accepted"});
+    }
+    catch (error) {
+        console.log(error.message);
+
+        return res.status(400).json({
+        success: false,
+        message: error.message,
+    });
+}
+
+}
+

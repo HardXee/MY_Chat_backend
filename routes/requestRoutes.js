@@ -1,6 +1,6 @@
 import express from "express"
 const router = express.Router();
-import { searchUser,sendRequest,getRequestCount,getReceiverRequests } from "../controllers/requestController.js";
+import { searchUser,sendRequest,getRequestCount,getReceiverRequests,acceptRequest } from "../controllers/requestController.js";
 
 
 // Register user
@@ -8,8 +8,7 @@ router.get('/searchUser',searchUser)
 router.post('/sendRequest',sendRequest)
 router.get('/getRequestsCount',getRequestCount)
 router.get('/getreceivedRequests',getReceiverRequests)
-
-
+router.post('/acceptRequest/:sender_id',acceptRequest)
 
 
 

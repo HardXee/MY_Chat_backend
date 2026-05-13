@@ -108,10 +108,11 @@ export const login = async(req,res) => {
             secure: false,
             sameSite: "lax"
         });
-
+      console.log(data)
         return res.status(200).send({
             message: "logined",
-            name: existingUser.name
+            name: existingUser.name,
+            id: existingUser.id.toString()
             
         })
     

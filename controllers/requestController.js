@@ -192,8 +192,29 @@ export const acceptRequest = async (req,res) => {
         return res.status(400).json({
         success: false,
         message: error.message,
-    });
+        });
+    }   
+
 }
+
+
+export const getFrends = async (req,res) => {
+   try {
+        const user_id = req.user.userID;
+        const user = await User.findById(user_id).populate("friends",("name email"))
+        
+    
+
+        return res.status(200).send({user})
+
+    } catch (error) {
+        console.log(error.message);
+
+        return res.status(400).json({
+        success: false,
+        message: error.message,
+        });
+    }
 
 }
 

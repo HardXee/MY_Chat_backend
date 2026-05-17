@@ -28,20 +28,29 @@ export const initSocket = (server) => {
     });
 
 
-    socket.on("send_message",async(data) => {
+    socket.on("send_message", async (data) => {
+      try {
+          if (!data.text || data.text.trim() === "") {
+            return;
+          }
 
-      const savedMessage = await Message.create({
-        roomId: data.roomId,
-        sender : data.sender,
-        receiver : data.receiver,
-        text : data.text,
+          const savedMessage = await Message.create({
+            roomId: data.roomId,
+            sender: data.sender,
+            receiver: data.receiver,
+            text: data.text,
+          });
 
-      });
+          const storemessage = await Message.create(savedMessage);
+          console.log(storemessage)
 
-      
-       io.to(data.roomId).emit("receive_message", savedMessage);
+          console.log(savedMessage.text)
+          io.to(data.roomId).emit("receive_message", savedMessage);
 
-    })
+        } catch (error) {
+          console.log(error);
+        }
+    });
 
 
   });

@@ -1,6 +1,9 @@
 import express from "express";
+
 import authRoutes from "./routes/authRoutes.js";
 import requstRoutes from './routes/requestRoutes.js'
+import messageRoutes from './routes/messageRoutes.js'
+
 import connectDB from "./db/db.js";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -35,6 +38,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use('/api/request',auth,requstRoutes)
+app.use('/messages',messageRoutes)
 
 app.get("/hello", (req, res) => {
   res.send("working");

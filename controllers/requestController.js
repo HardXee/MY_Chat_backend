@@ -203,7 +203,7 @@ export const getFrends = async (req,res) => {
         const user_id = req.user.userID;
         const user = await User.findById(user_id).populate("friends",("name email"))
         
-    
+        console.log(user)
 
         return res.status(200).send({user})
 

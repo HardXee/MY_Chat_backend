@@ -1,5 +1,6 @@
 import { Server } from "socket.io";
 import Message from "../modles/messageModel.js";
+import Convo from "../modles/conversation.model.js";
 
 let io;
 
@@ -34,17 +35,75 @@ export const initSocket = (server) => {
             return;
           }
 
+          const roomid = data.roomId
+          const convo = await Convo.findOne({
+            roomId: roomid
+          }) 
+
+
+// ----------------------------------
+
+          if(!convo) {
+            await Convo.findOneAndUpdate(
+                {
+                  roomId: data.roomId,
+                },
+
+                {
+                  participants: [data.sender, data.receiver],
+
+                  lastMessage: {
+                    text: data.text,
+                    sender: data.sender,
+                    createdAt: new Date(),
+                  },
+                },
+
+                {
+                  upsert: true,
+                  new: true,
+                },
+            );
+
+          }
+          else{
+            await Convo.findOneAndUpdate(
+                {
+                  roomId: data.roomId,
+                },
+
+                {
+                  participants: [data.sender, data.receiver],
+
+                  lastMessage: {
+                    text: data.text,
+                    sender: data.sender,
+                    createdAt: new Date(),
+                  },
+                },
+
+                {
+                returnDocument: "after"
+                },
+            );
+          }
+
+
+  // ----------------
           const savedMessage = await Message.create({
             roomId: data.roomId,
             sender: data.sender,
             receiver: data.receiver,
             text: data.text,
           });
+          
+
+        
 
           const storemessage = await Message.create(savedMessage);
           console.log(storemessage)
 
-          console.log(savedMessage.text)
+          // console.log(savedMessage.text)
           io.to(data.roomId).emit("receive_message", savedMessage);
 
         } catch (error) {

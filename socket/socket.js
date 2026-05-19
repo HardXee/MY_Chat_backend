@@ -31,80 +31,81 @@ export const initSocket = (server) => {
 
     socket.on("send_message", async (data) => {
       try {
-          if (!data.text || data.text.trim() === "") {
-            return;
-          }
+            if (!data.text || data.text.trim() === "") {
+              return;
+            }
 
-          const roomid = data.roomId
-          const convo = await Convo.findOne({
-            roomId: roomid
-          }) 
+            const roomid = data.roomId
+            const convo = await Convo.findOne({
+              roomId: roomid
+            }) 
 
 
-// ----------------------------------
+  // ----------------------------------
 
-          if(!convo) {
-            await Convo.findOneAndUpdate(
-                {
-                  roomId: data.roomId,
-                },
-
-                {
-                  participants: [data.sender, data.receiver],
-
-                  lastMessage: {
-                    text: data.text,
-                    sender: data.sender,
-                    createdAt: new Date(),
+            if(!convo) {
+              await Convo.findOneAndUpdate(
+                  {
+                    roomId: data.roomId,
                   },
-                },
 
-                {
-                  upsert: true,
-                  new: true,
-                },
-            );
+                  {
+                    participants: [data.sender, data.receiver],
 
-          }
-          else{
-            await Convo.findOneAndUpdate(
-                {
-                  roomId: data.roomId,
-                },
-
-                {
-                  participants: [data.sender, data.receiver],
-
-                  lastMessage: {
-                    text: data.text,
-                    sender: data.sender,
-                    createdAt: new Date(),
+                    lastMessage: {
+                      text: data.text,
+                      sender: data.sender,
+                      createdAt: new Date(data.createdAt),
+                    },
                   },
-                },
 
-                {
-                returnDocument: "after"
-                },
-            );
-          }
+                  {
+                    upsert: true,
+                    new: true,
+                  },
+              );
+
+            }
+            else{
+              await Convo.findOneAndUpdate(
+                  {
+                    roomId: data.roomId,
+                  },
+
+                  {
+                    participants: [data.sender, data.receiver],
+
+                    lastMessage: {
+                      text: data.text,
+                      sender: data.sender,
+                      createdAt: data.createdAt,
+                    },
+                  },
+
+                  {
+                  returnDocument: "after"
+                  },
+              );
+            }
 
 
-  // ----------------
-          const savedMessage = await Message.create({
-            roomId: data.roomId,
-            sender: data.sender,
-            receiver: data.receiver,
-            text: data.text,
-          });
+    // ----------------
+            const savedMessage = await Message.create({
+              roomId: data.roomId,
+              sender: data.sender,
+              receiver: data.receiver,
+              text: data.text,
+              createdAt: data.createdAt
+            });
+            
+
           
 
-        
+            const storemessage = await Message.create(savedMessage);
+            console.log(storemessage)
 
-          const storemessage = await Message.create(savedMessage);
-          console.log(storemessage)
-
-          // console.log(savedMessage.text)
-          io.to(data.roomId).emit("receive_message", savedMessage);
+            // console.log(savedMessage.text)
+            io.to(data.roomId).emit("receive_message", savedMessage);
 
         } catch (error) {
           console.log(error);

@@ -3,6 +3,7 @@ import User from '../modles/user.js'
 import Request from '../modles/request.js'
 import { response } from 'express';
 import mongoose from 'mongoose';
+import Convo from '../modles/conversation.model.js';
 
 export const searchUser = async (req,res) => {
     try{
@@ -203,9 +204,33 @@ export const getFrends = async (req,res) => {
         const user_id = req.user.userID;
         const user = await User.findById(user_id).populate("friends",("name email"))
         
-        console.log(user)
+      //  console.log(user.friends);
+        let arr = user.friends;
+     //  console.log(arr)
+    
+        const friendsmap = new Map();
+       
+        for (let i = 0; i < user.friends.length; i++) {
+         //   console.log(arr[i]._id.toString());
+            
+          //  let roomid = [user_id , arr[i]._id.toString()].sort().join("_") ;
+           // console.log(roomid)
+           // let convores = await Convo.findOne({roomId: roomid});
 
-        return res.status(200).send({user})
+           let convores = await Convo.findOne( { participants:{
+                    $all: [user_id,arr[i]._id]}
+                } 
+            )
+           // console.log(convores?.lastMessage?.text);
+            let lastmessage = convores?.lastMessage?.text;
+            let updatedAt = convores?.updatedAt
+            friendsmap.set(arr[i]._id.toString(),{lastmessage,updatedAt})
+
+        }
+       
+        const friendsMap = Object.fromEntries(friendsmap);
+       // console.log({user,friendsMap})
+        return res.status(200).send({user,friendsMap})
 
     } catch (error) {
         console.log(error.message);

@@ -124,11 +124,19 @@ export const login = async(req,res) => {
 }
 
 
+export const logout = (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: false, // true in production with HTTPS
+    sameSite: "lax",
+    path: "/",
+  });
 
-
-
-
-
+  return res.status(200).json({
+    status: "success",
+    message: "Logged out successfully",
+  });
+};
 
 
 

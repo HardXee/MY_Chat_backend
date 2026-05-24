@@ -25,7 +25,7 @@ const messageSchema = new mongoose.Schema({
     required: true,
   },
 
-  createdAt: {
+  createdAt: {  
     type: Date,
     required: true
   },

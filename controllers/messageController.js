@@ -2,14 +2,16 @@ import Message from '../modles/messageModel.js'
 
 
 export const getMyMessages= async(req,res) => {
-    try{
+    try{ 
+        // just make changes in frontend and it will also 
+        // work for the older messages 
        const {id} = req.params
        const {updatedAt} = req.params
     
-       console.log(updatedAt)
+       console.log(updatedAt)   
     
        const mymessages = await Message.find({
-            roomId: id,
+            roomId: id, 
 
             createdAt: {
                 $lt: new Date(updatedAt),
@@ -25,7 +27,7 @@ export const getMyMessages= async(req,res) => {
         return res.status(400).send("no message")
        }
 
-       console.log(mymessages.reverse())
+      // console.log(mymessages.reverse())
        return res.status(200).send(mymessages)
     }
     catch(error){
@@ -34,3 +36,8 @@ export const getMyMessages= async(req,res) => {
 
 
 }
+
+
+// export const getupscrollMessages = 
+
+

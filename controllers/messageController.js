@@ -28,7 +28,7 @@ export const getMyMessages= async(req,res) => {
        }
 
       // console.log(mymessages.reverse())
-       return res.status(200).send(mymessages)
+       return res.status(200).send(mymessages.reverse())
     }
     catch(error){
         console.log(error)
@@ -37,7 +37,5 @@ export const getMyMessages= async(req,res) => {
 
 }
 
-
-// export const getupscrollMessages = 
 
 

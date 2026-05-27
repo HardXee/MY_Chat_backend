@@ -4,8 +4,15 @@ import validator from 'validator'
 import bcrypt, { compare } from 'bcrypt'
 import dotenv from 'dotenv' 
 import cookieParser from 'cookie-parser'
+import nodemailer from 'nodemailer'
+
+import resetPasswordTemplate from '../template/passwordReset.js'
 
 const salt = Number(process.env.SALT);
+
+
+
+
 
 export const test = (req,res) => {
     try{
@@ -121,6 +128,99 @@ export const login = async(req,res) => {
         console.log(console.error())
     }
 
+}
+
+export const forgotPassword = async (req,res) => {
+    try{
+        const { email } = req.body;
+
+        const user = await User.findOne({ email });
+        if (!user) return res.status(404).json({ message: "User doesn't exist" });
+
+       console.log(process.env.JWT_SECRET_KEY)
+        const secret = process.env.JWT_SECRET_KEY + user.password;
+        const token = jwt.sign({ id: user._id, email: user.email }, secret, { expiresIn: '1h' });
+        const resetURL = `http://localhost:5173/reset_password/${user._id}/${token}`;
+
+
+         const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: 'shivingthakur@gmail.com  ',
+                pass: process.env.APP_SECRET,
+            },
+            });
+
+
+            const mailOptions = {
+            to: email,
+            from: 'shivingthakur@gmail.com',
+            subject: 'Password Reset Request',
+             html: resetPasswordTemplate(resetURL),
+        
+            };
+
+            await transporter.sendMail(mailOptions);
+
+             res.status(200).json({ message: 'Password reset link sent' });
+
+
+
+    }
+    catch(error){
+        console.error("Error while sending mail:", error);
+        res.status(500).json({ message: 'Something went wrong' });
+    }
+
+}
+
+export const resetPassword = async (req,res) => {
+    try{
+     
+        const { password ,id,token} = req.body;
+
+         const user = await User.findOne({ _id: id });
+        if (!user) {
+        return res.status(400).json({ message: "User not exists!" });
+        }
+
+        const secret = process.env.JWT_SECRET_KEY + user.password;
+
+      
+        jwt.verify(token, secret);
+        const encryptedPassword = await bcrypt.hash(password, 10);
+
+          await User.findByIdAndUpdate(id, {
+            password: encryptedPassword,
+            });
+
+     
+        res.status(200).json({ status: "success",message: 'Password has been reset' });
+
+
+    }
+    catch(error){
+        console.error("Error while sending mail:", error);
+         res.status(500).json({ message: 'Something went wrong' });
+
+
+         if (error.name === "JsonWebTokenError") {
+            return res.status(400).json({
+                message: "Invalid token",
+            });
+            }
+
+            if (error.name === "TokenExpiredError") {
+            return res.status(400).json({
+                message: "Token expired",
+            });
+            }
+
+            return res.status(500).json({
+            message: "Something went wrong",
+            });
+       
+    }
 }
 
 

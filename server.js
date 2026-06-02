@@ -29,7 +29,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://my-chat-liard-psi.vercel.app/"
+      "https://my-chat-liard-psi.vercel.app"
       
     ],
     credentials: true,

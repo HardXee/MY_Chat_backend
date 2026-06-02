@@ -23,56 +23,69 @@ export const test = (req,res) => {
     }
 }
 
-export const register = async(req,res) => {
-    try{
-        const {name,email,password} =  req.body;
+export const register = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
 
-        if(name.length == 0 || email.length == 0 || password == 0){
-            return res.status(400).send('Enter all fields')  
-        }
-      
-
-        if(validator.isEmail(email) == false){
-            return  res.status(400).send("email is invalild")                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
-        }
-
-        // check for existing user 
-        const existingUser = await User.findOne({ email })
-
-        if(existingUser) return res.status(400).json({ 
-            status: "failed",
-            message: "user already exists" });
-
-        // hash the password 
-        const hashpassword = await bcrypt.hash(password,salt);
-
-        // create new user 
-        const newUser = await User.create({
-            'name' : name,
-            'email' : email,
-            'password' : hashpassword
-        })
-        
-
-        res.status(201).send({
-            status: 'success',
-            message: "user registerd successfully"
-        })
-    
-    }
-    catch(error){
-        console.log(console.error())
-        return res.status(400).send({
-            'status' : "failes",
-            'error' : error
-        })
-
-        
+    // Check required fields
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        status: "failed",
+        message: "Enter all fields",
+      });
     }
 
+    // Validate email
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({
+        status: "failed",
+        message: "Email is invalid",
+      });
+    }
 
-}
+    // Validate password length
+    if (password.length < 6) {
+      return res.status(400).json({
+        status: "failed",
+        message: "Password must be at least 6 characters long",
+      });
+    }
 
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({
+        status: "failed",
+        message: "User already exists",
+      });
+    }
+
+    // Hash password
+    const hashpassword = await bcrypt.hash(password, salt);
+
+    // Create user
+    await User.create({
+      name,
+      email,
+      password: hashpassword,
+    });
+
+    return res.status(201).json({
+      status: "success",
+      message: "User registered successfully",
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      status: "failed",
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
 
 export const login = async(req,res) => {        
 
@@ -89,9 +102,9 @@ export const login = async(req,res) => {
         }
     
         // check for existing user 
-        const existingUser = await User.findOne({ email })
+            const existingUser = await User.findOne({ email })
 
-        if(!existingUser) return res.status(400).send("user or password wrong");
+            if(!existingUser) return res.status(400).send("No user found");
  
         // compare the password  using the entered password and the password stored in db 
         const compare = await bcrypt.compare(password,existingUser.password);
@@ -125,7 +138,7 @@ export const login = async(req,res) => {
     
     }
     catch(error){
-        console.log(console.error())
+        console.log(error)
     }
 
 }

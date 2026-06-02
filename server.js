@@ -1,4 +1,6 @@
 import express from "express";
+import dns from 'dns';
+dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 import authRoutes from "./routes/authRoutes.js";
 import requstRoutes from './routes/requestRoutes.js'
@@ -25,7 +27,10 @@ app.use(cookieParser());
 /* Middleware */
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      
+    ],
     credentials: true,
   })
 );
@@ -38,7 +43,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use('/api/request',auth,requstRoutes)
-app.use('/messages',messageRoutes)
+app.use('/api/messages',messageRoutes)
 
 app.get("/hello", (req, res) => {
   res.send("working");

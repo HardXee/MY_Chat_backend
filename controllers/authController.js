@@ -123,11 +123,11 @@ export const login = async(req,res) => {
 
         const token = jwt.sign(data,jwtSecretKey);
         console.log(existingUser)
-        res.cookie("token", token, {
-            httpOnly: false ,
-            secure: false,
-            sameSite: "lax"
-        });
+       res.cookie("token", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+      });
       console.log(data)
         return res.status(200).send({
             message: "logined",
